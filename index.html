@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Player</title>
+  <style>
+    body,
+    html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: black;
+    }
+
+    #videoPlayer {
+      width: 100vw;
+      height: 100vh;
+      background-color: black;
+    }
+
+    #exitBtn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: red;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+    }
+  </style>
+</head>
+
+<body>
+
+  <video id="videoPlayer" autoplay loop muted></video>
+  <button id="exitBtn">Exit Fullscreen</button>
+
+  <script>
+    const videoPlayer = document.getElementById('videoPlayer');
+    const exitBtn = document.getElementById('exitBtn');
+    let videoIndex = 0;
+    let videoList = [];
+
+    // دریافت لیست ویدیوها از سرور
+    fetch('/video-list')
+      .then(response => response.json())
+      .then(videos => {
+        videoList = videos;
+        playNextVideo();
+      });
+
+    // پخش ویدیو بعدی در لیست
+    function playNextVideo() {
+      if (videoList.length === 0) return;
+      videoPlayer.src = `/videos/${videoList[videoIndex]}`;
+      videoPlayer.play();
+      videoPlayer.onended = () => {
+        videoIndex = (videoIndex + 1) % videoList.length;
+        playNextVideo();
+      };
+    }
+
+    // دکمه خروج از تمام‌صفحه
+    exitBtn.onclick = () => {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      }
+    };
+
+    // فعال کردن حالت تمام‌صفحه
+    document.body.onclick = () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      }
+    };
+  </script>
+
+</body>
+
+</html>
